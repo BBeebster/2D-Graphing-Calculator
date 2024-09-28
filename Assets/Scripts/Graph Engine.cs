@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Graph
 {
@@ -9,15 +11,10 @@ namespace Graph
         [SerializeField]
         Transform pointPrefab;
 
-        [SerializeField, Range(10, 200)]
+        [SerializeField, Range(10, 1000)]
         int resolution = 10;
 
-        public float domainLeft = 100f;
-        public float domainRight = 100f;
-        public float rangeBottom = 100f;
-        public float rangeTop = 100f;
-
-        Transform[] points;
+        private LineRenderer lineRenderer;
 
         private Vector4 previousBounds;
 
@@ -26,7 +23,10 @@ namespace Graph
         // Start is called before the first frame update
         void Awake()
         {
+            InitializeLineRenderer();
             previousBounds = cameraData.GetCameraBounds();
+            DrawGrid(previousBounds);
+            DrawAxes(previousBounds);
             DrawPlot(previousBounds);
         }
 
@@ -36,56 +36,103 @@ namespace Graph
             Vector4 currentBounds = cameraData.GetCameraBounds();
             if (currentBounds != previousBounds) {
                 ClearPlot();
+                DrawGrid(currentBounds);
+                DrawAxes(currentBounds);
                 DrawPlot(currentBounds);
+                previousBounds = currentBounds;
             }
+
+            UpdateLineThickness();
+        }
+
+        void DrawAxes(Vector4 bounds)
+        {
+            float minX = bounds.x, maxX = bounds.y, minY = bounds.z, maxY = bounds.w;
+            /*
+            if (maxY > 0f && minY < 0f)
+            {
+                axisRenderer.SetPosition(0, new Vector3(minX - 1f, 0, 0));
+                axisRenderer.SetPosition(1, new Vector3(maxX + 1f, 0, 0));
+            }
+
+            if (maxX > 0f && minX < 0f)
+            {
+
+                axisRenderer.positionCount = 4;
+                axisRenderer.SetPosition(2, new Vector3(0, minY - 1f, 0));
+                axisRenderer.SetPosition(3, new Vector3(0, maxY + 1f, 0));
+            }
+            */
+        }
+
+        void DrawGrid(Vector4 bounds)
+        {
+            float minX = bounds.x, maxX = bounds.y, minY = bounds.z, maxY = bounds.w;
+
         }
 
         void DrawPlot(Vector4 bounds)
         {
-            float minX = bounds.x, maxX = bounds.y, minY = bounds.z, maxY = bounds.w;
+            float offset = 100f;
+            float minX = bounds.x, maxX = bounds.y, minY = bounds.z - offset, maxY = bounds.w + offset;
             float domain = maxX - minX;
             float step = domain / resolution;
-            Vector2 scale = Vector2.one * step;
-            Vector2 position = Vector2.zero;
-            //find amount of points to draw
-            //right domain - left domain * resolution
-            points = new Transform[Mathf.CeilToInt(domain) * resolution];
+
+            List<Vector3> positions = new List<Vector3>();
             //for each point drawn from left domain to right domain
-            for (int i = 0; i < resolution * Mathf.CeilToInt(domain); i++)
-            {  
-                position.x = (i + 0.5f) * step - Mathf.Abs(minX);
-                position.y = GetFunction(position.x);
-                
-                //check if the point is visible in the domain
-                if (position.x < maxX && position.x > minX) {
-                    //check if the point is visible in the range
-                    if (position.y < maxY && position.y > minY)
-                    {
-                        //draw the point
-                        Transform point = points[i] = Instantiate(pointPrefab);
-                        point.localPosition = position;
-                        point.localScale = scale;
-                    }
+            for (int i = -1; i <= resolution; i++)
+            {
+                float x = minX + i * step;
+                float y = GetFunction(x);
+
+                if (y < maxY && y > minY)
+                {
+                    //draw the line
+                    positions.Add(new Vector3(x, y, 0f));
                 }
-            }     
+            }
+
+            lineRenderer.positionCount = positions.Count;
+            lineRenderer.SetPositions(positions.ToArray());
         }
 
         void ClearPlot()
         {
-            for (int i = 0; i < points.Length; i++)
-            {
-                if (points[i] != null)
-                {
-                    Destroy(points[i].gameObject); // Destroy the object if it exists
-                    points[i] = null;   // Set the array element to null
-                }
-            }
+            lineRenderer.positionCount = 0; // Destroy the old line
         }
 
         float GetFunction(float x)
         {
-            float y = x * x;
+            float y = Mathf.Tan(x);
             return y;
+        }
+
+        void InitializeLineRenderer()
+        {
+            //create the lines between points
+            lineRenderer = gameObject.AddComponent<LineRenderer>();
+
+            //decide on line thickness
+            lineRenderer.startWidth = 0.1f;
+            lineRenderer.endWidth = 0.1f;
+
+
+            //set the material of the line and make it red
+            lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+            lineRenderer.startColor = Color.red;
+            lineRenderer.endColor = Color.red;
+
+            //set the number of points in the Line Renderer to match the array length of points
+            lineRenderer.positionCount = resolution;
+            lineRenderer.useWorldSpace = true;
+        }
+
+        void UpdateLineThickness()
+        {
+            float baseLineThickness = 1f;
+            float orthographicSize = cameraData.GetComponent<Camera>().orthographicSize;
+            float zoomCompensation = Mathf.Max(orthographicSize, 0.1f);
+            lineRenderer.widthMultiplier = baseLineThickness / zoomCompensation;
         }
     }
 }

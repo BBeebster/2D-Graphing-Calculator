@@ -12,8 +12,8 @@ namespace Graph
         [SerializeField]
         public float zoomSpeed = 2f;
 
-        public float minZoom = 0f;
-        public float maxZoom = Mathf.Infinity;
+        public float minZoom = 0.1f;
+        public float maxZoom = 10f;
 
         private Vector3 dragOrigin;
 
@@ -55,12 +55,6 @@ namespace Graph
             Bounds bounds = new Bounds(center, size);
 
             return new Vector4(bounds.min.x, bounds.max.x, bounds.min.y, bounds.max.y);
-        }
-
-        public static Vector2 GetDomain()
-        {
-            Vector2 domain = Vector2.zero;
-            return domain;
         }
     }
 }
