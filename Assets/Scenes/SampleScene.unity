@@ -431,7 +431,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inputWindow: {fileID: 621326356}
-  grid: {fileID: 0}
   resolution: 50
 --- !u!1 &519420028
 GameObject:
@@ -1410,7 +1409,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: v1.00a
+  m_Text: v1.01a
 --- !u!222 &1459751006
 CanvasRenderer:
   m_ObjectHideFlags: 0
