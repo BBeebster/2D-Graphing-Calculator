@@ -7,7 +7,7 @@ namespace Graph
     public class CameraController : MonoBehaviour
     {
         [SerializeField]
-        private Camera _camera;
+        public Camera _camera;
 
         [SerializeField]
         public float zoomSpeed = 2f;
@@ -44,6 +44,7 @@ namespace Graph
             _camera.orthographicSize = Mathf.Clamp(size, minZoom, maxZoom);
         }
 
+        /*
         public Vector4 GetCameraBounds()
         {
             Vector3 bottomLeft = _camera.ViewportToWorldPoint(new Vector3(0, 0, _camera.nearClipPlane));
@@ -55,6 +56,18 @@ namespace Graph
             Bounds bounds = new Bounds(center, size);
 
             return new Vector4(bounds.min.x, bounds.max.x, bounds.min.y, bounds.max.y);
+        }
+        */
+        public Vector4 GetCameraBounds()
+        {
+            float aspect = _camera.aspect; // Get the camera aspect ratio
+            float height = _camera.orthographicSize * 2; // Full height of the camera view
+            float width = height * aspect; // Calculate width based on aspect ratio
+
+            Vector3 bottomLeft = _camera.transform.position - new Vector3(width / 2, height / 2, 0);
+            Vector3 topRight = _camera.transform.position + new Vector3(width / 2, height / 2, 0);
+
+            return new Vector4(bottomLeft.x, topRight.x, bottomLeft.y, topRight.y);
         }
     }
 }

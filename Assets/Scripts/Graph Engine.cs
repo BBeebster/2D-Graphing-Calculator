@@ -41,8 +41,6 @@ namespace Graph
                 DrawPlot(currentBounds);
                 previousBounds = currentBounds;
             }
-
-            UpdateLineThickness();
         }
 
         void DrawAxes(Vector4 bounds)
@@ -127,12 +125,5 @@ namespace Graph
             lineRenderer.useWorldSpace = true;
         }
 
-        void UpdateLineThickness()
-        {
-            float baseLineThickness = 1f;
-            float orthographicSize = cameraData.GetComponent<Camera>().orthographicSize;
-            float zoomCompensation = Mathf.Max(orthographicSize, 0.1f);
-            lineRenderer.widthMultiplier = baseLineThickness / zoomCompensation;
-        }
     }
 }
