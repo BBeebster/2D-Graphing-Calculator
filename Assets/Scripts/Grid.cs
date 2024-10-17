@@ -18,7 +18,7 @@ public class Grid : MonoBehaviour
         
     }
 
-    private Vector4 GetBounds()
+    public Vector4 GetBounds()
     {
         RectTransform rectTransform = GetComponent<RectTransform>();
 
@@ -33,8 +33,6 @@ public class Grid : MonoBehaviour
             float top = position.y + (size.y * (1 - rectTransform.pivot.y));
             float bottom = position.y - (size.y * rectTransform.pivot.y); ;
 
-            Debug.Log($"Bounds: {left}, {right}, {top}, {bottom}");
-
             return new Vector4(left, right, top, bottom);
         }
 
@@ -43,6 +41,6 @@ public class Grid : MonoBehaviour
 
     private Vector4 DomainAndRange(Vector4 bounds)
     {
-        return new Vector4(-10f, 10f, 6.2f, -6.2f);
+        return new Vector4(-10f, 10f, 10f, -10f);
     }
 }

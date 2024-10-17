@@ -15,16 +15,19 @@ namespace GraphingCalc
         [SerializeField]
         private UI_InputWindow inputWindow;
 
-        [SerializeField, Range(10, 1000)]
-        int resolution = 10;
+        private float minX = -10f, maxX = 10f;
+
+        int resolution = 980;
 
         private string previousDomain;
         private string variableName;
 
         private LineRenderer lineRenderer;
 
+        private Grid grid;
         private void Awake()
         {
+            grid = FindObjectOfType<Grid>();
             InitializeLineRenderer();
         }
 
@@ -45,7 +48,7 @@ namespace GraphingCalc
             //change if the function has changed
             string currentFunction = inputWindow.GetFunction();
             string currentDomain = CheckValidFunction(currentFunction);
-            if (!currentDomain.Equals(previousDomain))
+            if (currentDomain != previousDomain)
             {
                 if (currentDomain != null)
                 {
@@ -53,21 +56,38 @@ namespace GraphingCalc
                     DrawGraph(currentDomain, variableName);
                 }
                 //update previousDomain
-                previousDomain = currentFunction;
+                previousDomain = currentDomain;
             }
         }
 
         public void DrawGraph(string expression, string variableName)
         {
             //get domain to draw for
-            //break the domain up into an amount of points equal to the resolution
-            //evaluate the domain at each point with the parser
-                //store the points in a vector2 format to be used to draw a line
-            //draw the line using the points
+            Vector4 bounds = grid.GetBounds();
+            float domainLengthInWorld = bounds.y - bounds.x;
+            Debug.Log($"domainLengthInWorld: {domainLengthInWorld}");
+
+            List<Vector3> positions = new List<Vector3>();
             Domain_Parser parser = new Domain_Parser(variableName);
 
-            float x = 0f;
-            float result = parser.Parse(previousDomain, x);
+            float domainLengthInCoords = maxX - minX;
+            float step = domainLengthInCoords / resolution;
+            for (int i = 0; i < resolution; i++)
+            {
+                float xCoord = minX + i * step;
+                //calculate yCoord
+                //float yCoord = parser.Parse(previousDomain, xCoord);
+                float yCoord = xCoord;
+                if (yCoord < maxX && yCoord > minX)
+                {
+                    //CONVERT FROM XY COORDS TO POSITIONS ON THE SCREEN
+                        //I think this will work.
+                    positions.Add(new Vector3(bounds.x + i, yCoord / step, 0f));
+                }
+            }
+
+            lineRenderer.positionCount = positions.Count;
+            lineRenderer.SetPositions(positions.ToArray());
         }
 
         public void ClearGraph()
@@ -81,8 +101,8 @@ namespace GraphingCalc
             lineRenderer = gameObject.AddComponent<LineRenderer>();
 
             //decide on line thickness
-            lineRenderer.startWidth = 0.1f;
-            lineRenderer.endWidth = 0.1f;
+            lineRenderer.startWidth = 0.5f;
+            lineRenderer.endWidth = 0.5f;
 
 
             //set the material of the line and make it red
@@ -93,6 +113,9 @@ namespace GraphingCalc
             //set the number of points in the Line Renderer to match the array length of points
             lineRenderer.positionCount = resolution;
             lineRenderer.useWorldSpace = true;
+
+            lineRenderer.sortingLayerName = "Foreground"; // Replace with your sorting layer name
+            lineRenderer.sortingOrder = 1; // Higher values are rendered on top
         }
 
         public string CheckValidFunction(string function) //if a function passes all tests it will return a domain to parse, otherwise it will return null

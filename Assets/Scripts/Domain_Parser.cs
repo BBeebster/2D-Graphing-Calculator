@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace GraphingCalc
 {
-    public class Domain_Parser : MonoBehaviour
+    public class Domain_Parser
     {
         private int index;
         private string input;
@@ -16,14 +16,14 @@ namespace GraphingCalc
 
         public float Parse(string expression, float variableValue)
         {
-            input = expression;
-            index = 0;
-            return ParseExpression(variableValue);
+            //s represents a symbol, n represents a number, f represent a function, (, ), ^, *, /, +, - are all straight forward
+            //evaluate for unique numbers like e or pi and replace them with a float value
+            //evaluate subfunctions like sin as f(n)
+            //evaluate parenthesis that follow format of (n) where n is a number
+            //evaluate exponents 
+            return 0f;
         }
 
-        public float ParseExpression(float variableValue)
-        {
-            return 1f;
-        }
+
     }
 }
